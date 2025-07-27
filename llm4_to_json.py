@@ -1,4 +1,4 @@
-#v5 all working well, just first letter small problem
+# v6 All cases 
 import re
 import json
 
@@ -27,30 +27,23 @@ def strip_inline_bold(s: str) -> str:
     collapse multiple spaces, and strip.
     """
     s = normalize_punctuation(s)
-    # Remove backtick code markers: `...`
-    s = re.sub(r'`([^`]+)`', r"\1", s)
-    # Remove standalone backticks if any remain
-    s = s.replace('`', '')
-    # Remove bold markers
-    s = re.sub(r'_?\*\*(.*?)\*\*_?', r"\1", s)
-    # Remove trailing numeric markers
-    s = re.sub(r'(?:\b)(\d+)$', '', s)
-    # Remove any runs of 2 or more repeated punctuation characters
-    s = re.sub(r'[\.\-\,\"\=]{2,}', '', s)
-    # Normalize whitespace
-    return ' '.join(s.split()).strip()
+    s = re.sub(r'`([^`]+)`', r"\1", s)  # Remove backtick code markers
+    s = s.replace('`', '')                # Remove any leftover backticks
+    s = re.sub(r'_?\*\*(.*?)\*\*_?', r"\1", s)  # Remove bold markers
+    s = re.sub(r'(?:\b)(\d+)$', '', s)              # Remove trailing numeric markers
+    s = re.sub(r'[\.\-\,\"\=]{2,}', '', s)      # Remove runs of punctuation
+    return ' '.join(s.split()).strip()                # Normalize whitespace
 
 
 def parse_markdown_outline(md_text: str, page: int):
     outline = []
     for line in md_text.splitlines():
-        # Skip separator lines
         if re.fullmatch(r"^[\.\-\*,=\"']{2,}\s*$", line.strip()):
-            continue
+            continue  # Skip separators
         stripped = normalize_punctuation(line.strip())
+
         level = None
         text = None
-
         if stripped.startswith('# '):
             level = 'H1'
             text = strip_inline_bold(stripped[2:].strip())
@@ -67,56 +60,46 @@ def parse_markdown_outline(md_text: str, page: int):
             level = 'H3'
             text = strip_inline_bold(stripped)
 
+        # Filter out anything starting with lowercase after cleanup
+        if text and re.match(r'^[a-z]', text):
+            continue
+
         if level and text:
             outline.append({
                 'level': level,
                 'text': text,
                 'page': page + 1
             })
-
     return outline
 
 
 def extract_outline_and_title(md_text):
     title = 'Untitled'
-    # Find first H1 as title
+    # Skip lowercase lines when finding title
     for page in md_text:
         for line in page.get('text', '').splitlines():
             stripped = normalize_punctuation(line.strip())
             if stripped.startswith('# '):
-                title = strip_inline_bold(stripped[2:].strip())
-                break
+                candidate = strip_inline_bold(stripped[2:].strip())
+                if not re.match(r'^[a-z]', candidate):
+                    title = candidate
+                    break
         if title != 'Untitled':
             break
 
     result = {'title': title, 'outline': []}
     for i, page in enumerate(md_text):
-        # Extract headings
-        outline_elements = parse_markdown_outline(page.get('text', ''), i)
-        # Include any ToC items not already present
-        toc_items = page.get('toc_items', [])
-        if toc_items:
-            existing_texts = {e['text'] for e in outline_elements}
-            for item in toc_items:
-                # Unpack first two elements in case item has extra data
-                if not isinstance(item, (list, tuple)) or len(item) < 2:
-                    continue
-                level_num, item_text = item[0], item[1]
-                clean_text = strip_inline_bold(item_text)
-                if clean_text not in existing_texts:
-                    level = 'H' + str(level_num if 1 <= level_num <= 3 else 3)
-                    outline_elements.append({
-                        'level': level,
-                        'text': clean_text,
-                        'page': i + 1
-                    })
-
-        result['outline'].extend(outline_elements)
+        items = parse_markdown_outline(page.get('text', ''), i)
+        # Include additional TOC items
+        for item in page.get('toc_items', []):
+            if isinstance(item, (list, tuple)) and len(item) >= 2:
+                lvl, txt = item[0], strip_inline_bold(item[1])
+                if not re.match(r'^[a-z]', txt) and txt not in {e['text'] for e in items}:
+                    level = f'H{lvl if 1 <= lvl <= 3 else 3}'
+                    items.append({'level': level, 'text': txt, 'page': i + 1})
+        result['outline'].extend(items)
     return result
 
 # Example usage:
-# pages = [
-#     {'text': "# `MyTitle`\n### `CodeSnippet` and **Bold** text", 
-#      'toc_items': [(1, '`MyTitle`'), (2, '`CodeSnippet`', 'extra')]}
-# ]
+# pages = [{'text': "# Title\nhello world\n## Subtitle\n`,code` Text", 'toc_items': [(2, 'ExtraItem')]}]
 print(json.dumps(extract_outline_and_title(md_text), indent=2))
