@@ -1,78 +1,94 @@
+# v3 working
 import re
 import json
 
+def normalize_punctuation(s: str) -> str:
+    """
+    Convert common unicode punctuation to ASCII equivalents.
+    """
+    replacements = {
+        "‘": "'",  # left single quote
+        "’": "'",  # right single quote
+        "“": '"',  # left double quote
+        "”": '"',  # right double quote
+        "–": '-',  # en dash
+        "—": '-',  # em dash
+        "…": '...',  # ellipsis
+    }
+    for uni, ascii_rep in replacements.items():
+        s = s.replace(uni, ascii_rep)
+    return s
+
+
+def strip_inline_bold(s: str) -> str:
+    """
+    Remove all occurrences of **...** or _**...**_ anywhere in the string,
+    including trailing numeric markers. Then remove repeated punctuation runs,
+    collapse multiple spaces and strip.
+    """
+    s = normalize_punctuation(s)
+    # Remove bold markers
+    s = re.sub(r'_?\*\*(.*?)\*\*_?', r"\1", s)
+    # Remove trailing numeric markers
+    s = re.sub(r'(?:\b)(\d+)$', '', s)
+    # Remove any runs of 2 or more repeated punctuation characters
+    s = re.sub(r'[\.\-\,\"\=]{2,}', '', s)
+    # Normalize whitespace
+    return ' '.join(s.split()).strip()
+
+
 def parse_markdown_outline(md_text, page):
-    """
-    Parses one page of markdown and returns:
-      {
-        "outline": [
-          {"level": "H1", "text": "...", "page": <1-based>},
-          …
-        ]
-      }
-    - First '# ' → H1
-    - '## ' → H1
-    - '### ' → H2
-    - '#### ' → H3
-    - full-line **bold** or _**bold**_ → H3
-    - strips surrounding **…** or _**…**_
-    """
-    def strip_bold(s: str) -> str:
-        return re.sub(r'^_?\*\*(.*?)\*\*_?$', r'\1', s).strip()
-
     outline = []
-
     for line in md_text.splitlines():
-        stripped = line.strip()
+        # Skip separator lines
+        if re.fullmatch(r"^[\.\-\*,=\"']{2,}\s*$", line.strip()):
+            continue
+        stripped = normalize_punctuation(line.strip())
         level = None
-        text  = None
+        text = None
 
         if stripped.startswith('# '):
-            text = strip_bold(stripped[2:].strip())
-            level = "H1"
-
+            level = 'H1'
+            text = strip_inline_bold(stripped[2:].strip())
         elif stripped.startswith('## '):
-            text = strip_bold(stripped[3:].strip())
-            level = "H1"
-
+            level = 'H1'
+            text = strip_inline_bold(stripped[3:].strip())
         elif stripped.startswith('### '):
-            text = strip_bold(stripped[4:].strip())
-            level = "H2"
-
+            level = 'H2'
+            text = strip_inline_bold(stripped[4:].strip())
         elif stripped.startswith('#### '):
-            text = strip_bold(stripped[5:].strip())
-            level = "H3"
-
-        # full-line **…** or _**…**_ 
+            level = 'H3'
+            text = strip_inline_bold(stripped[5:].strip())
         elif re.fullmatch(r'_?\*\*(.*?)\*\*_?', stripped):
-            text = strip_bold(stripped)
-            level = "H3"
+            level = 'H3'
+            text = strip_inline_bold(stripped)
 
         if level and text:
             outline.append({
-                "level": level,
-                "text":  text,
-                "page":  page + 1
+                'level': level,
+                'text': text,
+                'page': page + 1
             })
 
     return outline
 
-# Extract title from the first page with '# ' heading
-title = "Untitled"
-for page in md_text:
-    for line in page['text'].splitlines():
-        stripped = line.strip()
-        if stripped.startswith('# '):
-            # Remove markdown bold if present
-            title = re.sub(r'^_?\*\*(.*?)\*\*_?$', r'\1', stripped[2:].strip())
+
+def extract_outline_and_title(md_text):
+    title = 'Untitled'
+    # Find first H1 as title
+    for page in md_text:
+        for line in page['text'].splitlines():
+            stripped = normalize_punctuation(line.strip())
+            if stripped.startswith('# '):
+                title = strip_inline_bold(stripped[2:].strip())
+                break
+        if title != 'Untitled':
             break
-    if title != "Untitled":
-        break
 
-result = {}
-result["outline"] = []
-for page_no in range(len(md_text)):
-    result["outline"].extend(parse_markdown_outline(md_text[page_no]['text'], page_no))
+    result = {'title': title, 'outline': []}
+    for i, page in enumerate(md_text):
+        result['outline'].extend(parse_markdown_outline(page['text'], i))
+    return result
 
-result["title"] = title
-print(json.dumps(result, indent=2))
+# Example usage:
+print(json.dumps(extract_outline_and_title(md_text), indent=2))
