@@ -1,123 +1,144 @@
-# PDF Outline Extractor
 
-A Python tool that extracts structured outlines and titles from PDF documents using LLM-based text processing.
+# Anton1A : PDF Outline Extractor
 
-## Features
+A friendly Python tool that turns your PDFs into clean, structured JSON outlines, perfect for RAG applications and programmatic use.
 
-- Extract document titles and hierarchical outlines from PDFs
-- Support for multiple heading levels (H1, H2, H3)
-- Clean text processing with punctuation normalization
-- Both programmatic API and command-line interface
-- JSON output format
-- Batch processing: Process all PDFs in a directory at once
-- Automatic output directory creation for batch operations
+---
+
+## Why Anton1A?
+
+- **Fast & Accurate**: Leverages PyMuPDF and the specialized `pymupdf4llm` library for robust text extraction.
+- **LLM-Powered Parsing**: Custom parsing logic built on top of LLM-generated Markdown converts complex PDF layouts into clear, hierarchical headings.
+- **Rich Feature Set**: Batch processing, CLI and API interfaces, automatic output directory management, and multi-level heading support.
+
+---
+
+## Key Features
+
+- **Extract Titles & Outlines**: Automatically detect the document title and hierarchical headings (H1, H2, H3).
+- **Clean Text Output**: Normalizes punctuation, trims whitespace, and ensures consistent formatting.
+- **CLI & Programmatic API**: Use it from your terminal or import and call `extract_outline_from_pdf` directly in Python.
+- **JSON Output**: Easily integrate with other tools or workflows that consume JSON.
+- **Batch Mode**: Process entire directories of PDFs in one command, with automatic output organization.
+
+---
 
 ## Installation
 
-1. Clone this repository
-2. Install the required dependencies:
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Prtm2110/AntonPDF-1A.git
+   cd AntonPDF-1A
+````
+
+2. **Install dependencies:**
+
    ```bash
    pip install -r requirements.txt
    ```
 
+---
+
 ## Requirements
 
-- Python 3.10+
-- PyMuPDF
-- pymupdf4llm
+* Python 3.10 or newer
+* [PyMuPDF](https://pypi.org/project/PyMuPDF/)
+* [pymupdf4llm](https://pypi.org/project/pymupdf4llm/)
 
-## Usage
+---
+
+## Quick Start
 
 ### Command Line Interface
 
-#### Process all PDFs in batch:
-```bash
-python3 llm4_to_json.py -all
-```
-This will process all PDF files from the `input/` directory and save individual JSON files to the `output/` folder.
+* **Process one PDF and print to console**:
 
-#### Save outline to JSON file:
-```bash
-python llm4_to_json.py -o adobe_outline.json Pdfs/Adobe_60pages.pdf
-```
+  ```bash
+  python llm4_to_json.py path/to/document.pdf
+  ```
 
-#### Print outline to stdout:
-```bash
-python llm4_to_json.py Pdfs/Adobe_60pages.pdf
-```
+* **Save to a named JSON file**:
 
-#### Handle paths with spaces:
-```bash
-python llm4_to_json.py -o output.json My Document With Spaces.pdf
-```
+  ```bash
+  python llm4_to_json.py -o outline.json "My Document With Spaces.pdf"
+  ```
 
-### Programmatic API
+* **Batch process all PDFs in `input/`**:
+
+  ```bash
+  python llm4_to_json.py --all
+  ```
+
+  This will read every PDF in `input/` and write output files to `output/`.
+
+---
+
+### Python API
 
 ```python
 from llm4_to_json import extract_outline_from_pdf
 
-# Extract outline from PDF
-result = extract_outline_from_pdf("path/to/your/document.pdf")
-
-# The result contains:
-# - title: Document title
-# - outline: List of headings with level, text, and page number
-print(result['title'])
-for item in result['outline']:
+result = extract_outline_from_pdf("path/to/my_doc.pdf")
+print("Title:", result["title"])
+for item in result["outline"]:
     print(f"Page {item['page']}: {item['level']} - {item['text']}")
 ```
 
-## Output Format
+---
 
-The tool generates JSON output with the following structure:
+## Output Format
 
 ```json
 {
   "title": "Document Title",
   "outline": [
-    {
-      "level": "H1",
-      "text": "Chapter 1: Introduction",
-      "page": 1
-    },
-    {
-      "level": "H2", 
-      "text": "Overview",
-      "page": 2
-    }
+    { "level": "H1", "text": "Chapter 1: Introduction", "page": 1 },
+    { "level": "H2", "text": "Background", "page": 2 }
   ]
 }
 ```
 
-## Command Line Options
+---
 
-- `-all, --all-pdfs`: Process all PDFs from `input/` directory and save to `output_json/` folder
-- `-o, --output`: Specify output JSON file (default: stdout)
-- `pdf_path`: Path to the PDF file (supports spaces without quotes)
+## Command-Line Options
+
+* `-a, --all`         : Process all PDFs in the `input/` folder and output to `output/`
+* `-o, --output FILE` : Write JSON to `FILE` instead of printing to stdout
+* `pdf_path`          : Path to the PDF file (supports spaces without additional quoting)
+
+---
 
 ## Examples
 
-### Single File Processing
-```bash
-# Process a single PDF and print to stdout
-python llm4_to_json.py input/1.pdf
+1. **Single PDF to stdout**:
 
-# Process a single PDF and save to file
-python llm4_to_json.py -o my_output.json input/1.pdf
-```
+   ```bash
+   python llm4_to_json.py input/1.pdf
+   ```
 
-### Batch Processing
-```bash
-# Process all PDFs in input/ directory
-python llm4_to_json.py -all
+2. **Single PDF to file**:
 
-# This will create:
-# output_json/1.json
-# output_json/2.json
-# output_json/3.json
-# output_json/4.json
-# output_json/5.json
-```
+   ```bash
+   python llm4_to_json.py -o my_outline.json input/2.pdf
+   ```
 
-The `input/` directory contains sample PDF files for testing:
-- Various numbered PDFs (1.pdf, 2.pdf, 3.pdf, 4.pdf, 5.pdf)
+3. **Batch mode**:
+
+   ```bash
+   python llm4_to_json.py --all
+   ```
+
+---
+
+## License
+
+MIT License. Feel free to modify and adapt this tool for your own projects.
+
+---
+
+## Contributing
+
+Contributions, issues, and feature requests are welcome! Please open an issue or submit a pull request on GitHub.
+
+*Happy outlining!*
+
