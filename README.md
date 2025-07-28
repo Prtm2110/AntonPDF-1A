@@ -29,7 +29,7 @@ A friendly Python tool that turns your PDFs into clean, structured JSON outlines
    ```bash
    git clone https://github.com/Prtm2110/AntonPDF-1A.git
    cd AntonPDF-1A
-````
+   ```
 
 2. **Install dependencies:**
 
