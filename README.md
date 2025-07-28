@@ -8,9 +8,21 @@ A friendly Python tool that turns your PDFs into clean, structured JSON outlines
 ## Why Anton1A?
 
 - **Fast & Accurate**: Leverages PyMuPDF and the specialized `pymupdf4llm` library for robust text extraction.
+- **LaTeX Corruption Resilient**: Even with corrupted LaTeX it works really well - see the image below showing accurate extraction from a document with corrupt LaTeX formatting.
 - **LLM-Powered Parsing**: Custom parsing logic built on top of LLM-generated Markdown converts complex PDF layouts into clear, hierarchical headings.
 - **Rich Feature Set**: Batch processing, CLI and API interfaces, automatic output directory management, and multi-level heading support.
 
+### Performance Benchmarks
+
+Here are benchmark results showing the number of PDF pages vs the time it took to extract outlines and create JSON:
+
+![Performance Benchmark](docs/image.png)
+
+### Outline Highlights
+
+This shows how it accurately highlights different PDF headings even with corrupted LaTeX formatting:
+
+![Accuracy Demo](docs/PdfExtraction.jpg)
 ---
 
 ## Key Features
@@ -19,7 +31,8 @@ A friendly Python tool that turns your PDFs into clean, structured JSON outlines
 - **Clean Text Output**: Normalizes punctuation, trims whitespace, and ensures consistent formatting.
 - **CLI & Programmatic API**: Use it from your terminal or import and call `extract_outline_from_pdf` directly in Python.
 - **JSON Output**: Easily integrate with other tools or workflows that consume JSON.
-- **Batch Mode**: Process entire directories of PDFs in one command, with automatic output organization.
+- **Batch Mode**: Process entire directories of PDFs in one command, with automatic output organization using `python llm4_to_json.py --all`.
+
 
 ---
 
