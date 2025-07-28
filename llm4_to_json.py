@@ -118,7 +118,7 @@ def main():
     parser.add_argument(
         '-all', '--all-pdfs',
         action='store_true',
-        help='Process all PDFs from Pdfs directory and save to output_json folder'
+        help='Process all PDFs from Pdfs directory and save to output folder'
     )
     # Capture all remaining args as the PDF path (allows unquoted spaces)
     parser.add_argument(
@@ -130,8 +130,8 @@ def main():
 
     if args.all_pdfs:
         # Process all PDFs from Pdfs directory
-        pdfs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Pdfs')
-        output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output_json')
+        pdfs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'input')
+        output_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'output')
         
         if not os.path.exists(pdfs_dir):
             print(f"Error: Pdfs directory '{pdfs_dir}' not found", file=sys.stderr)
