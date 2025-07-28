@@ -1,6 +1,7 @@
 # v6 All cases 
 import re
 import json
+import pymupdf4llm
 
 def normalize_punctuation(s: str) -> str:
     """
@@ -100,6 +101,10 @@ def extract_outline_and_title(md_text):
         result['outline'].extend(items)
     return result
 
+
+def extract_outline_from_pdf(file_path):
+    md_text = pymupdf4llm.to_markdown(file_path, page_chunks=True)
+    return extract_outline_and_title(md_text)
+
 # Example usage:
-# pages = [{'text': "# Title\nhello world\n## Subtitle\n`,code` Text", 'toc_items': [(2, 'ExtraItem')]}]
-print(json.dumps(extract_outline_and_title(md_text), indent=2))
+# print(json.dumps(extract_outline_from_pdf(file_path), indent=2))
