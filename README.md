@@ -9,6 +9,8 @@ A Python tool that extracts structured outlines and titles from PDF documents us
 - Clean text processing with punctuation normalization
 - Both programmatic API and command-line interface
 - JSON output format
+- Batch processing: Process all PDFs in a directory at once
+- Automatic output directory creation for batch operations
 
 ## Installation
 
@@ -20,13 +22,19 @@ A Python tool that extracts structured outlines and titles from PDF documents us
 
 ## Requirements
 
-- Python 3.6+
+- Python 3.10+
 - PyMuPDF
 - pymupdf4llm
 
 ## Usage
 
 ### Command Line Interface
+
+#### Process all PDFs in batch:
+```bash
+python3 llm4_to_json.py -all
+```
+This will process all PDF files from the `Pdfs/` directory and save individual JSON files to the `output_json/` folder.
 
 #### Save outline to JSON file:
 ```bash
@@ -83,12 +91,33 @@ The tool generates JSON output with the following structure:
 
 ## Command Line Options
 
+- `-all, --all-pdfs`: Process all PDFs from `Pdfs/` directory and save to `output_json/` folder
 - `-o, --output`: Specify output JSON file (default: stdout)
 - `pdf_path`: Path to the PDF file (supports spaces without quotes)
 
 ## Examples
 
+### Single File Processing
+```bash
+# Process a single PDF and print to stdout
+python llm4_to_json.py Pdfs/1.pdf
+
+# Process a single PDF and save to file
+python llm4_to_json.py -o my_output.json Pdfs/1.pdf
+```
+
+### Batch Processing
+```bash
+# Process all PDFs in Pdfs/ directory
+python llm4_to_json.py -all
+
+# This will create:
+# output_json/1.json
+# output_json/2.json
+# output_json/3.json
+# output_json/4.json
+# output_json/5.json
+```
+
 The `Pdfs/` directory contains sample PDF files for testing:
-- `Adobe_60pages.pdf` - Main test document
-- `merged50.pdf` - 50-page test document
-- Various numbered PDFs (1.pdf, 2.pdf, etc.)
+- Various numbered PDFs (1.pdf, 2.pdf, 3.pdf, 4.pdf, 5.pdf)
