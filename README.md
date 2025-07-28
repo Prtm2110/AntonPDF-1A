@@ -86,6 +86,22 @@ for item in result["outline"]:
 
 ---
 
+### Docker Usage
+
+* **Build the Docker image**:
+
+  ```bash
+  docker build --platform linux/amd64 -t Anton1A:somerandomidentifier .
+  ```
+
+* **Run with Docker**:
+
+  ```bash
+  docker run --rm -v $(pwd)/input:/app/input -v $(pwd)/output:/app/output --network none Anton1A:somerandomidentifier
+  ```
+
+---
+
 ## Output Format
 
 ```json
